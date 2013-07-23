@@ -14,7 +14,8 @@ using System.Net.Http.Headers;
 namespace EvrythngAPITest
 {
     /// <summary>
-    /// Summary description for ThngRepositoryTests
+    /// This test class tests the integration with the Evrythng API as it pertains to 
+    /// thngs, properties, and locations.
     /// </summary>
     [TestClass]
     public class ThngRepositoryTests
@@ -633,10 +634,10 @@ namespace EvrythngAPITest
         #region Location
 
         /// <summary>
-        /// The API DOES allow a Location to be added at the /thngs endpoint if none already exist
+        /// The API DOES NOT allow a Location to be added at the /thngs endpoint if none already exist
         /// </summary>
         [TestMethod]
-        public void UpdateALocationWhenNoneExistsSucceeds()
+        public void UpdateALocationWhenNoneExistsFails()
         {
             var updateTestThng = new Thng { name = "tag update" };
             _sut.CreateThng(updateTestThng);
@@ -645,10 +646,9 @@ namespace EvrythngAPITest
             updateTestThng.location = new Location { longitude = 30, latitude = -30 };
             _sut.UpdateThng(updateTestThng);
 
-            Assert.AreNotEqual<DateTime?>(originalUpdateDate, updateTestThng.updatedAt);
-            Assert.IsNotNull(updateTestThng.location);
-            Assert.AreEqual(30, updateTestThng.location.longitude);
-            Assert.AreEqual(-30, updateTestThng.location.latitude);
+            var thng2 = _sut.GetThng(updateTestThng.Id);
+            
+            Assert.IsNull(thng2.location);            
 
             _sut.DeleteThng(updateTestThng.Id);
         }
