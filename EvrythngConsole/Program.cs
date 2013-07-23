@@ -9,6 +9,12 @@ using EvrythngAPI;
 
 namespace EvrythngConsole
 {
+   
+   /// <summary>
+   /// Before running this console application, you must obtain an API key from Evrythng
+   /// and place it in the App.config file.
+   /// Getting started with an API key, etc:  https://dev.evrythng.com/documentation/start
+   /// </summary> 
    class Program
    {       
       private static IThngService _thngService;       
