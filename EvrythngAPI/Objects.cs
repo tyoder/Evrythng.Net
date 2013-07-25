@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace EvrythngAPI
 {
+   
     public class Thng
     {
 
@@ -16,7 +17,7 @@ namespace EvrythngAPI
             this.properties = new List<Property>();
 
         }
-        
+
         #region Public Properties
 
         public string Id { get; set; }
@@ -28,6 +29,26 @@ namespace EvrythngAPI
         public List<Property> properties { get; set; }
         public Location location { get; set; }
 
+        #endregion Public Properties
+    }
+
+    public class Product
+    {
+        #region Public Properties
+
+        public string Id { get; set; }
+        public DateTime? createdAt { get; set; }
+        public DateTime? updatedAt { get; set; }
+        public string fn { get; set; }
+        public string description { get; set; }
+        public string brand { get; set; }
+        public List<string> categories { get; set; }
+        public List<string> photos { get; set; }
+        public string url { get; set; }
+        public List<Identifier> identifiers { get; set; }
+        public List<Property> properties { get; set; }
+        public List<string> tags { get; set; }
+        
         #endregion Public Properties
     }
 
@@ -44,4 +65,13 @@ namespace EvrythngAPI
         public Double latitude { get; set; }
         public Double longitude { get; set; }
     }
+
+    public class Identifier
+    {
+        public string key { get; set; }
+        public string value { get; set; }
+    }
+    
+
+
 }
