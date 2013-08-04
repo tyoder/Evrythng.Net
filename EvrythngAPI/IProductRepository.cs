@@ -9,5 +9,9 @@ namespace EvrythngAPI
     public interface IProductRepository
     {
         void CreateProduct(Product product);
+
+        Product GetProduct(string productId);
+
+        void DeleteProduct(string productId);
     }
 }

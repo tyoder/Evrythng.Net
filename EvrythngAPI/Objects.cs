@@ -12,7 +12,7 @@ namespace EvrythngAPI
 
         public Thng()
         {
-            // Initialize tags so List is never null.
+            // Initialize List properties so they are never null.
             this.tags = new List<string>();
             this.properties = new List<Property>();
 
@@ -34,6 +34,16 @@ namespace EvrythngAPI
 
     public class Product
     {
+        public Product()
+        {
+            // Initialize List properties so they are never null.
+            this.categories = new List<string>();
+            this.photos = new List<string>();
+            this.identifiers = new List<Identifier>();
+            this.tags = new List<string>();
+            this.properties = new List<Property>();
+        }
+        
         #region Public Properties
 
         public string Id { get; set; }
