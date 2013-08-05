@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using EvrythngAPI;
 using System.Net.Http.Headers;
+using System.Linq;
 
 namespace EvrythngAPITest
 {
@@ -51,10 +52,15 @@ namespace EvrythngAPITest
         #endregion Private Methods
 
         [TestMethod]
-        public void CreateProductWithfn_Descr_Brand_Succeeds()
+        public void CreateProductWithSimplePropertiesSucceeds()
         {
             // Arrange
-            var productToCreate = new Product { fn = "test product", description = "product for unit test", brand = "Kraft" };
+            var productToCreate = new Product { 
+                fn = "test product", 
+                description = "product for unit test", 
+                brand = "Kraft",
+                url = "http://www.google.com"
+            };
             
             // Act
             _sut.CreateProduct(productToCreate);
@@ -68,6 +74,7 @@ namespace EvrythngAPITest
             Assert.AreEqual(productToCreate.fn, createdProduct.fn);
             Assert.AreEqual(productToCreate.description, createdProduct.description);
             Assert.AreEqual(productToCreate.brand, createdProduct.brand);
+            Assert.AreEqual(productToCreate.url, createdProduct.url);
                         
             _sut.DeleteProduct(productToCreate.Id);
         }
@@ -135,6 +142,68 @@ namespace EvrythngAPITest
             Assert.IsFalse(string.IsNullOrEmpty(productToCreate.Id));
             var createdProduct = _sut.GetProduct(productToCreate.Id);
             Assert.IsTrue(StringListsAreEqual(productToCreate.photos, createdProduct.photos));
+
+            _sut.DeleteProduct(productToCreate.Id);
+        }
+
+        [TestMethod]
+        public void CreateProductWithPropertiesSucceeds()
+        {
+            // Arrange
+            var productToCreate = new Product { fn = "test product" };
+            productToCreate.properties.Add(new Property { key = "color", value = "red" } );
+            productToCreate.properties.Add(new Property { key = "weight", value = "180" });
+
+            // Act
+            _sut.CreateProduct(productToCreate);
+
+            // Assert
+            Assert.IsFalse(string.IsNullOrEmpty(productToCreate.Id));
+            var createdProduct = _sut.GetProduct(productToCreate.Id);
+            Assert.IsTrue(createdProduct.properties.Count == 2);
+
+            var colorProperty = (from p in createdProduct.properties
+                                    where p.key == "color"
+                                    select p).FirstOrDefault();
+
+            Assert.IsTrue(colorProperty.value == "red");
+
+            var weightProperty = (from p in createdProduct.properties
+                                  where p.key == "weight"
+                                  select p).FirstOrDefault();
+
+            Assert.IsTrue(weightProperty.value == "180");
+            
+            _sut.DeleteProduct(productToCreate.Id);
+        }
+
+        [TestMethod]
+        public void CreateProductWithIdentifiersSucceeds()
+        {
+            // Arrange
+            var productToCreate = new Product { fn = "test product" };
+            productToCreate.identifiers.Add(new Identifier { key = "isbn", value = "12sd34dg" });
+            productToCreate.identifiers.Add(new Identifier { key = "vin", value = "123456677" });
+
+            // Act
+            _sut.CreateProduct(productToCreate);
+
+            // Assert
+            Assert.IsFalse(string.IsNullOrEmpty(productToCreate.Id));
+            var createdProduct = _sut.GetProduct(productToCreate.Id);
+            Assert.IsTrue(createdProduct.identifiers.Count == 2);
+
+            var isbnIdentifier = (from i in createdProduct.identifiers
+                                 where i.key == "isbn"
+                                 select i).FirstOrDefault();
+
+            Assert.IsTrue(isbnIdentifier.value == "12sd34dg");
+
+            var vinIdentifier = (from i in createdProduct.identifiers
+                                  where i.key == "vin"
+                                  select i).FirstOrDefault();
+
+            Assert.IsTrue(vinIdentifier.value == "123456677");
 
             _sut.DeleteProduct(productToCreate.Id);
         }

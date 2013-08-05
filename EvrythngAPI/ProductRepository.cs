@@ -54,6 +54,12 @@ namespace EvrythngAPI
                 dynamicProduct.brand = productToConvert.brand;
             }
 
+            // Get Url
+            if (!string.IsNullOrEmpty(productToConvert.url))
+            {
+                dynamicProduct.url = productToConvert.url;
+            }
+
             // Convert categories
             if (productToConvert.categories != null && productToConvert.categories.Count > 0)
             {
@@ -88,6 +94,18 @@ namespace EvrythngAPI
                 dynamicProduct.properties = propertiesObject;
             }
 
+            // Convert Identifiers
+            if (productToConvert.identifiers != null && productToConvert.identifiers.Count > 0)
+            {
+                dynamic identitiesObject = new JObject();
+                foreach (var i in productToConvert.identifiers)
+                {
+                    var jProp = new JProperty(i.key, i.value);
+                    identitiesObject.Add(jProp);
+                }
+                dynamicProduct.identifiers = identitiesObject;
+            }
+
             return dynamicProduct;
 
         }
@@ -98,6 +116,7 @@ namespace EvrythngAPI
             product.fn = jObjectToConvert.fn;
             product.description = jObjectToConvert.description;
             product.brand = jObjectToConvert.brand;
+            product.url = jObjectToConvert.url;
 
             if (jObjectToConvert.categories != null)
             {
@@ -112,6 +131,41 @@ namespace EvrythngAPI
             if (jObjectToConvert.tags != null)
             {
                 product.tags = jObjectToConvert.tags.ToObject<List<string>>();
+            }
+
+            if (jObjectToConvert.properties != null)
+            {
+                product.properties = new List<Property>();
+                if (jObjectToConvert.properties != null)
+                {
+                    foreach (var p in jObjectToConvert.properties)
+                    {
+                        // p is a Newtonsoft JProperty and has "Name" and "Value"
+                        product.properties.Add(new Property
+                        {
+                            key = p.Name,
+                            value = p.Value,
+                            timestamp = null  // When creating Properties this way, no timestamp is returned
+                        });
+                    }
+                }
+            }
+
+            if (jObjectToConvert.identifiers != null)
+            {
+                product.identifiers = new List<Identifier>();
+                if (jObjectToConvert.identifiers != null)
+                {
+                    foreach (var i in jObjectToConvert.identifiers)
+                    {
+                        // i is a Newtonsoft JProperty and has "Name" and "Value"
+                        product.identifiers.Add(new Identifier
+                        {
+                            key = i.Name,
+                            value = i.Value
+                        });
+                    }
+                }
             }
 
             product.createdAt = Utilities.DateTimeSinceEpoch((long)jObjectToConvert.createdAt);
@@ -149,13 +203,7 @@ namespace EvrythngAPI
                     dynamic jObject = JObject.Parse(jsonResult);
                     product.Id = jObject.id;
                     product.createdAt = Utilities.DateTimeSinceEpoch((long)jObject.createdAt);
-                    product.updatedAt = Utilities.DateTimeSinceEpoch((long)jObject.updatedAt);
-
-                    // Get the exact product representation returned by Evrythng API
-                    // and set the reference variable passed in to that representation.
-                    //product = null;
-                    //product = new Product();
-                    //ConvertJObjectToProduct(jObject, product);
+                    product.updatedAt = Utilities.DateTimeSinceEpoch((long)jObject.updatedAt);                    
 
                 });
             task.Wait();
