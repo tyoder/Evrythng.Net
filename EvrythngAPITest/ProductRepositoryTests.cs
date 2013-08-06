@@ -207,5 +207,55 @@ namespace EvrythngAPITest
 
             _sut.DeleteProduct(productToCreate.Id);
         }
+
+        [TestMethod]
+        public void GetProductsTest()
+        {
+            var beginTime = DateTime.Now;
+            
+            var productOne = new Product();
+            productOne.fn = "prod1";
+            productOne.brand = "ford";
+            productOne.description = "my first prod";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property{key = "color", value = "red"});
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            var productTwo = new Product();
+            productTwo.fn = "prod2";
+            productTwo.brand = "mazda";
+            productTwo.description = "my second prod";
+            productTwo.categories.Add("cars");
+            productTwo.tags.Add("trucks");
+            productTwo.photos.Add("http://www.google.com");
+            productTwo.properties.Add(new Property { key = "color", value = "blue" });
+            productTwo.identifiers.Add(new Identifier { key = "vin", value = "456" });
+            productTwo.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+            _sut.CreateProduct(productTwo);
+
+            var endTime = DateTime.Now;
+
+            var myProducts = _sut.GetProducts();
+           
+            var prod1 = (from p in myProducts
+                          where p.fn == "prod1" && p.createdAt > beginTime && p.createdAt < endTime
+                          select p).FirstOrDefault();
+
+            var prod2 = (from p in myProducts
+                         where p.fn == "prod2" && p.createdAt > beginTime && p.createdAt < endTime
+                         select p).FirstOrDefault();
+
+            Assert.AreEqual("ford", prod1.brand);
+            Assert.AreEqual("mazda", prod2.brand);
+                                    
+            _sut.DeleteProduct(productOne.Id);
+            _sut.DeleteProduct(productTwo.Id);
+
+        }
     }
 }

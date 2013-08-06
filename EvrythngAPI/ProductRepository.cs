@@ -237,6 +237,36 @@ namespace EvrythngAPI
 
         }
 
+        public List<Product> GetProducts()
+        {
+            List<Product> products = null;
+
+            var task = _httpClient.GetAsync("products")
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic productsArray = JArray.Parse(jsonResult) as JArray;
+                    products = new List<Product>();
+
+                    foreach (dynamic p in productsArray)
+                    {
+                        var product = new Product();
+                        ConvertJObjectToProduct(p, product);
+                        products.Add(product);
+                    }
+                });
+            task.Wait();
+
+            return products;
+        }
+
         public void DeleteProduct(string productId)
         {
             var task = _httpClient.DeleteAsync("products/" + productId)
@@ -251,5 +281,7 @@ namespace EvrythngAPI
                     });
             task.Wait();
         }
+
+        
     }
 }
