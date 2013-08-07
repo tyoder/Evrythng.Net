@@ -42,24 +42,15 @@ namespace EvrythngAPI
             // Name should never be null - checked by service layer
             dynamicProduct.fn = productToConvert.fn;
 
-            // Get Description
-            if (!string.IsNullOrEmpty(productToConvert.description))
-            {
-                dynamicProduct.description = productToConvert.description;
-            }
+            // Get Description - if null, set to string.Empty
+            dynamicProduct.description = productToConvert.description ?? string.Empty;
 
-            // Get Brand
-            if (!string.IsNullOrEmpty(productToConvert.brand))
-            {
-                dynamicProduct.brand = productToConvert.brand;
-            }
+            // Get Brand - if null, set to string.Empty
+            dynamicProduct.brand = productToConvert.brand ?? string.Empty;
 
-            // Get Url
-            if (!string.IsNullOrEmpty(productToConvert.url))
-            {
-                dynamicProduct.url = productToConvert.url;
-            }
-
+            // Get Url - if null, set to string.Empty
+            dynamicProduct.url = productToConvert.url ?? string.Empty;
+            
             // Convert categories
             if (productToConvert.categories != null && productToConvert.categories.Count > 0)
             {
@@ -265,6 +256,40 @@ namespace EvrythngAPI
             task.Wait();
 
             return products;
+        }
+
+        public void UpdateProduct(Product product)
+        {
+            // Convert Product to JObject
+            var productAsJobject = ConvertProductToJObject(product);
+
+            // Serialize JObject to Json
+            string productJson = JsonConvert.SerializeObject(productAsJobject, Formatting.Indented);
+
+            // Set content of request
+            var content = new StringContent(productJson);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var task = _httpClient.PutAsync("products/" + product.Id, content)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    // Evrythng API returns the created Product with Id and timestamps
+                    dynamic jObject = JObject.Parse(jsonResult);
+
+                    // Convert dynamic object to Thng
+                    ConvertJObjectToProduct(jObject, product);
+
+                });
+            task.Wait();
+
         }
 
         public void DeleteProduct(string productId)

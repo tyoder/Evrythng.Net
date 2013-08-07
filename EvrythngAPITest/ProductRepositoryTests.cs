@@ -257,5 +257,81 @@ namespace EvrythngAPITest
             _sut.DeleteProduct(productTwo.Id);
 
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void GetNonexistantProductThrows()
+        {
+            var notProduct = _sut.GetProduct("does1not2exist3");
+        }
+
+        [TestMethod]
+        public void UpdateProductfnBrandDescription()
+        {
+            // Arrange
+            var productOne = new Product();
+            productOne.fn = "prod1a";
+            productOne.brand = "forda";
+            productOne.description = "my first prod a";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+            
+            // Act
+            productOne.fn = "test me";
+            productOne.description = "changed desc";
+            productOne.brand = "chevy";
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            Assert.AreEqual<string>("test me", updatedProduct.fn);
+            Assert.AreEqual<string>("changed desc", updatedProduct.description);
+            Assert.AreEqual<string>("chevy", updatedProduct.brand);
+
+            _sut.DeleteProduct(productOne.Id);
+
+        }
+
+        [TestMethod]
+        public void UpdateProduct_WithNullValues()
+        {
+            // Arrange
+            var productOne = new Product();
+            productOne.fn = "prod1a";
+            productOne.brand = "forda";
+            productOne.description = "my first prod a";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.fn = null;
+            productOne.description = null;
+            productOne.brand = null;
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            // Repository will not allow fn to be null or empty.  The ProductService should not allow this,
+            // so it should never get this far, but just in case...
+            Assert.AreNotEqual<string>(string.Empty, updatedProduct.fn);
+            // Description and brand can be empty
+            Assert.AreEqual<string>(string.Empty, updatedProduct.description);
+            Assert.AreEqual<string>(string.Empty, updatedProduct.brand);
+
+            _sut.DeleteProduct(productOne.Id);
+
+        }
     }
 }

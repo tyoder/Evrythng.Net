@@ -14,6 +14,8 @@ namespace EvrythngAPI
 
         List<Product> GetProducts();
 
+        void UpdateProduct(Product product);
+
         void DeleteProduct(string productId);
     }
 }
