@@ -51,26 +51,17 @@ namespace EvrythngAPI
             // Get Url - if null, set to string.Empty
             dynamicProduct.url = productToConvert.url ?? string.Empty;
             
-            // Convert categories
-            if (productToConvert.categories != null && productToConvert.categories.Count > 0)
-            {
-                var productCategories = new JProperty("categories", productToConvert.categories);
-                dynamicProduct.Add(productCategories);
-            }
-
+            // Convert categories                            
+            var productCategories = new JProperty("categories", productToConvert.categories);
+            dynamicProduct.Add(productCategories);
+            
             // Convert photos
-            if (productToConvert.photos != null && productToConvert.photos.Count > 0)
-            {
-                var productPhotos = new JProperty("photos", productToConvert.photos);
-                dynamicProduct.Add(productPhotos);
-            }
+            var productPhotos = new JProperty("photos", productToConvert.photos);
+            dynamicProduct.Add(productPhotos);
 
             // Convert tags
-            if (productToConvert.tags != null && productToConvert.tags.Count > 0)
-            {
-                var productTags = new JProperty("tags", productToConvert.tags);
-                dynamicProduct.Add(productTags);
-            }
+            var productTags = new JProperty("tags", productToConvert.tags);
+            dynamicProduct.Add(productTags);
 
             // Convert Properties
             if (productToConvert.properties != null && productToConvert.properties.Count > 0)

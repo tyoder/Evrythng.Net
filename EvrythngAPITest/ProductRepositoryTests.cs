@@ -35,6 +35,22 @@ namespace EvrythngAPITest
 
         #region Private Methods
 
+        private Product CreateTestProduct()
+        {
+            var productOne = new Product();
+            productOne.fn = "prod1";
+            productOne.brand = "ford";
+            productOne.description = "my first prod";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            return productOne;
+        }
+        
         private bool StringListsAreEqual(List<string> list1, List<string> list2)
         {
             if (list1.Count != list2.Count)
@@ -210,20 +226,11 @@ namespace EvrythngAPITest
 
         [TestMethod]
         public void GetProductsTest()
-        {
-            var beginTime = DateTime.Now;
-            
-            var productOne = new Product();
-            productOne.fn = "prod1";
-            productOne.brand = "ford";
-            productOne.description = "my first prod";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property{key = "color", value = "red"});
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
+        {            
+            var beginTime = DateTime.Now.AddMinutes(-5.0);
 
+            var productOne = CreateTestProduct();
+            
             var productTwo = new Product();
             productTwo.fn = "prod2";
             productTwo.brand = "mazda";
@@ -238,7 +245,7 @@ namespace EvrythngAPITest
             _sut.CreateProduct(productOne);
             _sut.CreateProduct(productTwo);
 
-            var endTime = DateTime.Now;
+            var endTime = DateTime.Now.AddMinutes(5);
 
             var myProducts = _sut.GetProducts();
            
@@ -266,7 +273,7 @@ namespace EvrythngAPITest
         }
 
         [TestMethod]
-        public void UpdateProductfnBrandDescription()
+        public void UpdateProduct_fnBrandDescriptionUrl()
         {
             // Arrange
             var productOne = new Product();
@@ -286,6 +293,7 @@ namespace EvrythngAPITest
             productOne.fn = "test me";
             productOne.description = "changed desc";
             productOne.brand = "chevy";
+            productOne.url = "http://www.yahoo.com";
             _sut.UpdateProduct(productOne);
 
             // Assert
@@ -293,6 +301,7 @@ namespace EvrythngAPITest
             Assert.AreEqual<string>("test me", updatedProduct.fn);
             Assert.AreEqual<string>("changed desc", updatedProduct.description);
             Assert.AreEqual<string>("chevy", updatedProduct.brand);
+            Assert.AreEqual<string>("http://www.yahoo.com", updatedProduct.url);
 
             _sut.DeleteProduct(productOne.Id);
 
@@ -319,6 +328,7 @@ namespace EvrythngAPITest
             productOne.fn = null;
             productOne.description = null;
             productOne.brand = null;
+            productOne.url = null;
             _sut.UpdateProduct(productOne);
 
             // Assert
@@ -329,9 +339,123 @@ namespace EvrythngAPITest
             // Description and brand can be empty
             Assert.AreEqual<string>(string.Empty, updatedProduct.description);
             Assert.AreEqual<string>(string.Empty, updatedProduct.brand);
+            Assert.AreEqual<string>(string.Empty, updatedProduct.url);
 
             _sut.DeleteProduct(productOne.Id);
 
         }
+
+        [TestMethod]
+        public void UpdateProduct_AddCategoriesTagsPhotos()
+        {
+            // Arrange
+            var productOne = new Product();
+            productOne.fn = "prod1a";
+            productOne.brand = "forda";
+            productOne.description = "my first prod a";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.categories.Add("boats");
+            productOne.tags.Add("used");
+            productOne.photos.Add("http://www.flicker.com");
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);            
+            Assert.AreEqual(2, updatedProduct.categories.Count);
+            Assert.AreEqual(2, updatedProduct.tags.Count);
+            Assert.AreEqual(2, updatedProduct.photos.Count);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_ChangeCategoriesTagsPhotos()
+        {
+            // Arrange
+            var productOne = new Product();
+            productOne.fn = "prod1a";
+            productOne.brand = "forda";
+            productOne.description = "my first prod a";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.categories[0] = "boats";
+            productOne.tags[0] = "used";
+            productOne.photos[0] = "http://www.flicker.com";
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);            
+            Assert.AreEqual("boats", updatedProduct.categories[0]);
+            Assert.AreEqual("used", updatedProduct.tags[0]);
+            Assert.AreEqual("http://www.flicker.com", updatedProduct.photos[0]);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_RemoveCategoriesTagsPhotos()
+        {
+            // Arrange
+            var productOne = new Product();
+            productOne.fn = "prod1a";
+            productOne.brand = "forda";
+            productOne.description = "my first prod a";
+            productOne.categories.Add("cars");
+            productOne.tags.Add("trucks");
+            productOne.photos.Add("http://www.google.com");
+            productOne.properties.Add(new Property { key = "color", value = "red" });
+            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
+            productOne.url = "http://www.google.com";
+
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.categories.Remove("cars");
+            productOne.tags.Remove("trucks");
+            productOne.photos.Remove("http://www.google.com");
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            // The ProductService should not allow Categories to be null, but Categories could be empty
+            Assert.AreEqual(0, updatedProduct.categories.Count);
+            Assert.AreEqual(0, updatedProduct.tags.Count);
+            Assert.AreEqual(0, updatedProduct.photos.Count);
+           
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        //[TestMethod]
+        //public void CleanUp()
+        //{
+
+        //    var myProducts = _sut.GetProducts();
+
+        //    foreach (Product p in myProducts)
+        //    {
+        //        if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
+        //        {
+        //            _sut.DeleteProduct(p.Id);
+        //        }
+        //    }
+
+        //}
     }
 }
