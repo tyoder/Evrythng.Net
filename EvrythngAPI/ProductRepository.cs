@@ -34,6 +34,22 @@ namespace EvrythngAPI
 
         #region Private Methods
 
+        private List<Property> ConvertJArrayToProperties(JArray propertiesArray)
+        {
+            var properties = new List<Property>();
+
+            foreach (dynamic p in propertiesArray)
+            {
+                var myProperty = new Property();
+                myProperty.key = p.key;
+                myProperty.value = p.value;
+                myProperty.timestamp = Utilities.DateTimeSinceEpoch((long)p.timestamp);
+                properties.Add(myProperty);
+            }
+
+            return properties;
+        }
+
         private JObject ConvertProductToJObject(Product productToConvert)
         {
             // Create a dynamic JObject for more controlled serialization
@@ -63,22 +79,31 @@ namespace EvrythngAPI
             var productTags = new JProperty("tags", productToConvert.tags);
             dynamicProduct.Add(productTags);
 
-            // Convert Properties
-            if (productToConvert.properties != null && productToConvert.properties.Count > 0)
+            //Create a new JObject for Product.properties
+            dynamic propertiesObject = new JObject();
+            foreach (var p in productToConvert.properties)
             {
-                // Create a new JObject for Thng.properties
-                dynamic propertiesObject = new JObject();
-                foreach (var p in productToConvert.properties)
-                {
-                    var jProp = new JProperty(p.key, p.value);
-                    propertiesObject.Add(jProp);
-                }
-                dynamicProduct.properties = propertiesObject;
+                var jProp = new JProperty(p.key, p.value);
+                propertiesObject.Add(jProp);
             }
+            dynamicProduct.properties = propertiesObject;
 
-            // Convert Identifiers
-            if (productToConvert.identifiers != null && productToConvert.identifiers.Count > 0)
-            {
+            //// Convert Properties
+            //if (productToConvert.properties != null && productToConvert.properties.Count > 0)
+            //{
+            //    // Create a new JObject for Thng.properties
+            //    dynamic propertiesObject = new JObject();
+            //    foreach (var p in productToConvert.properties)
+            //    {
+            //        var jProp = new JProperty(p.key, p.value);
+            //        propertiesObject.Add(jProp);
+            //    }
+            //    dynamicProduct.properties = propertiesObject;
+            //}
+
+            //// Convert Identifiers
+            //if (productToConvert.identifiers != null && productToConvert.identifiers.Count > 0)
+            //{
                 dynamic identitiesObject = new JObject();
                 foreach (var i in productToConvert.identifiers)
                 {
@@ -86,7 +111,7 @@ namespace EvrythngAPI
                     identitiesObject.Add(jProp);
                 }
                 dynamicProduct.identifiers = identitiesObject;
-            }
+            //}
 
             return dynamicProduct;
 
@@ -298,6 +323,115 @@ namespace EvrythngAPI
             task.Wait();
         }
 
-        
+        #region Property Methods
+
+        public List<Property> GetProperties(string productId)
+        {
+
+            var endpointAddress = string.Format("products/{0}/properties", productId);
+
+            List<Property> productProperties = null;
+
+            var task = _httpClient.GetAsync(endpointAddress)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic props = JArray.Parse(jsonResult) as JArray;                    
+                    productProperties = ConvertJArrayToProperties(props);
+                                                           
+                });
+            task.Wait();
+
+            return productProperties;
+
+        }
+
+        /// <summary>
+        /// Gets a specific property of a Product and returns a history of values with timestamps.
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="propertyKey">The property key of the desired property</param>
+        /// <returns>A specific Product Property</returns>
+        public List<Property> GetPropertyHistory(string productId, string propertyKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets a specific property of a Product within a specified time interval
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="propertyKey">The property key of the desired property</param>
+        /// <param name="beginDateTime">The "Begin" DateTime</param>
+        /// <param name="endDateTime">The "End" DateTime</param>
+        /// <returns></returns>
+        public List<Property> GetPropertyHistory(string productId, string propertyKey, DateTime? beginDateTime, DateTime? endDateTime)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// Creates or updates properties of a Product
+        /// </summary>
+        /// <param name="productId">the Id of the Product</param>
+        /// <param name="properties">One or more properties to create or update.</param>
+        /// <returns>The property or properties created or updated.</returns>
+        public List<Property> CreateUpdateProperties(string productId, List<Property> properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Updates a specific property of a Product
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="property">The Property object with updates</param>
+        /// <returns>void - Property passed by reference will be updated</returns>
+        public void UpdateProperty(string productId, Property property)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Updates a specific property of a Product with multiple values
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="properties">List of properties to update</param>
+        /// <returns>void - Properties passed by reference will be updated</returns>
+        public void UpdateProperty(string productId, List<Property> properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Deletes a specific Property of a Product, including all values of that Property over time.
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="propertyKey">The property key of the property to delete</param>
+        public void DeleteProperty(string productId, string propertyKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Deletes all values of a Property prior to the specified timestamp.
+        /// </summary>
+        /// <param name="productId">The Id of the Product</param>
+        /// <param name="propertyKey">The property key</param>
+        /// <param name="endDateTime">Timestamp before which all property values will be removed</param>
+        public void DeleteProperty(string productId, string propertyKey, DateTime? endDateTime)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion Property Methods
+
+
     }
 }

@@ -276,17 +276,7 @@ namespace EvrythngAPITest
         public void UpdateProduct_fnBrandDescriptionUrl()
         {
             // Arrange
-            var productOne = new Product();
-            productOne.fn = "prod1a";
-            productOne.brand = "forda";
-            productOne.description = "my first prod a";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property { key = "color", value = "red" });
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
-
+            var productOne = CreateTestProduct();            
             _sut.CreateProduct(productOne);
             
             // Act
@@ -311,17 +301,7 @@ namespace EvrythngAPITest
         public void UpdateProduct_WithNullValues()
         {
             // Arrange
-            var productOne = new Product();
-            productOne.fn = "prod1a";
-            productOne.brand = "forda";
-            productOne.description = "my first prod a";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property { key = "color", value = "red" });
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
-
+            var productOne = CreateTestProduct();            
             _sut.CreateProduct(productOne);
 
             // Act
@@ -349,17 +329,7 @@ namespace EvrythngAPITest
         public void UpdateProduct_AddCategoriesTagsPhotos()
         {
             // Arrange
-            var productOne = new Product();
-            productOne.fn = "prod1a";
-            productOne.brand = "forda";
-            productOne.description = "my first prod a";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property { key = "color", value = "red" });
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
-
+            var productOne = CreateTestProduct();
             _sut.CreateProduct(productOne);
 
             // Act
@@ -381,17 +351,7 @@ namespace EvrythngAPITest
         public void UpdateProduct_ChangeCategoriesTagsPhotos()
         {
             // Arrange
-            var productOne = new Product();
-            productOne.fn = "prod1a";
-            productOne.brand = "forda";
-            productOne.description = "my first prod a";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property { key = "color", value = "red" });
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
-
+            var productOne = CreateTestProduct();
             _sut.CreateProduct(productOne);
 
             // Act
@@ -413,17 +373,7 @@ namespace EvrythngAPITest
         public void UpdateProduct_RemoveCategoriesTagsPhotos()
         {
             // Arrange
-            var productOne = new Product();
-            productOne.fn = "prod1a";
-            productOne.brand = "forda";
-            productOne.description = "my first prod a";
-            productOne.categories.Add("cars");
-            productOne.tags.Add("trucks");
-            productOne.photos.Add("http://www.google.com");
-            productOne.properties.Add(new Property { key = "color", value = "red" });
-            productOne.identifiers.Add(new Identifier { key = "vin", value = "123" });
-            productOne.url = "http://www.google.com";
-
+            var productOne = CreateTestProduct();            
             _sut.CreateProduct(productOne);
 
             // Act
@@ -442,20 +392,171 @@ namespace EvrythngAPITest
             _sut.DeleteProduct(productOne.Id);
         }
 
-        //[TestMethod]
-        //public void CleanUp()
-        //{
+        [TestMethod]
+        public void UpdateProduct_CannotAddProperty()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
 
-        //    var myProducts = _sut.GetProducts();
+            // Act
+            productOne.properties.Add(new Property { key = "size", value = "large" });
+            
+            _sut.UpdateProduct(productOne);
 
-        //    foreach (Product p in myProducts)
-        //    {
-        //        if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
-        //        {
-        //            _sut.DeleteProduct(p.Id);
-        //        }
-        //    }
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);            
+            Assert.AreNotEqual(2, updatedProduct.properties.Count);
 
-        //}
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_CannotModifiyProperty()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
+
+            // Act
+            // Try to change 'color' property from 'red' to 'blue'
+            productOne.properties[0].value = "blue";
+
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            // The 'color' Property will not have changed - still 'red', not 'blue'
+            Assert.AreEqual("red", updatedProduct.properties[0].value);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_CannotRemoveProperty()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
+
+            // Act
+            // Try to change 'color' property from 'red' to 'blue'
+            productOne.properties.RemoveAt(0);
+
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            // There will still be one Property, even though we tried to remove it
+            Assert.AreNotEqual(0, updatedProduct.properties.Count);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_AddIdentifier()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.identifiers.Add(new Identifier { key = "size", value = "large" });
+
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);            
+            Assert.AreEqual(2, updatedProduct.identifiers.Count);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_ModifyIdentifier()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.identifiers[0].value = "small";
+
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            Assert.AreEqual("small", updatedProduct.identifiers[0].value);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_RemoveIdentifier()
+        {
+            // Arrange
+            var productOne = CreateTestProduct();
+            _sut.CreateProduct(productOne);
+
+            // Act
+            productOne.identifiers.RemoveAt(0);
+
+            _sut.UpdateProduct(productOne);
+
+            // Assert
+            var updatedProduct = _sut.GetProduct(productOne.Id);
+            Assert.AreEqual(0, updatedProduct.identifiers.Count);
+
+            _sut.DeleteProduct(productOne.Id);
+        }
+
+        #region Properties Tests
+
+        [TestMethod]
+        public void GetPropertiesWhenPropertiesExistSucceeds()
+        {
+            // Arrange
+            var getPropsProduct = new Product { fn = "Get Product Properties Test" };
+            getPropsProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            getPropsProduct.properties.Add(new Property { key = "speed", value = "fast", timestamp = DateTime.Now });
+            _sut.CreateProduct(getPropsProduct);
+            var originalUpdateDate = getPropsProduct.updatedAt;
+
+            // Act
+            Assert.IsFalse(string.IsNullOrEmpty(getPropsProduct.Id));
+            var myProperties = _sut.GetProperties(getPropsProduct.Id);
+
+            // Assert
+            Assert.IsTrue(getPropsProduct.properties.Count == 2);
+            Assert.IsTrue(myProperties.Count == 2);
+            Assert.AreEqual<string>(getPropsProduct.properties[0].value, myProperties[0].value);
+            Assert.AreEqual<string>(getPropsProduct.properties[1].value, myProperties[1].value);
+            Assert.IsNotNull(myProperties[0].timestamp);
+            Assert.IsNotNull(myProperties[0].timestamp);
+
+            _sut.DeleteProduct(getPropsProduct.Id);
+        }
+
+
+        #endregion Properties Tests
+
+        [TestMethod]
+        public void CleanUp()
+        {
+
+            var myProducts = _sut.GetProducts();
+
+            foreach (Product p in myProducts)
+            {
+                if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
+                {
+                    _sut.DeleteProduct(p.Id);
+                }
+            }
+
+            var cleanedProducts = _sut.GetProducts();
+            Assert.AreEqual(1, cleanedProducts.Count);
+
+        }
     }
 }
