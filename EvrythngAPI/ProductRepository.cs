@@ -361,7 +361,27 @@ namespace EvrythngAPI
         /// <returns>A specific Product Property</returns>
         public List<Property> GetPropertyHistory(string productId, string propertyKey)
         {
-            throw new NotImplementedException();
+            var endpointAddress = string.Format("products/{0}/properties/{1}", productId, propertyKey);
+
+            List<Property> propertyHistory = null;
+
+            var task = _httpClient.GetAsync(endpointAddress)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic props = JArray.Parse(jsonResult) as JArray;
+                    propertyHistory = Utilities.ConvertJArrayToProperties(props, propertyKey);
+                });
+            task.Wait();
+
+            return propertyHistory;
         }
 
         /// <summary>
@@ -374,8 +394,34 @@ namespace EvrythngAPI
         /// <returns></returns>
         public List<Property> GetPropertyHistory(string productId, string propertyKey, DateTime? beginDateTime, DateTime? endDateTime)
         {
-            throw new NotImplementedException();
+            var beginMilliseconds = Utilities.MillisecondsSinceEpoch(beginDateTime);
+            var endMilliseconds = Utilities.MillisecondsSinceEpoch(endDateTime);
+
+            var endpointAddress = string.Format("products/{0}/properties/{1}?from={2}&to={3}", productId, propertyKey, beginMilliseconds, endMilliseconds);
+
+            List<Property> propertyHistory = null;
+
+            var task = _httpClient.GetAsync(endpointAddress)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic props = JArray.Parse(jsonResult) as JArray;
+                    propertyHistory = Utilities.ConvertJArrayToProperties(props, propertyKey);
+
+
+                });
+            task.Wait();
+
+            return propertyHistory;
         }
+
         /// <summary>
         /// Creates or updates properties of a Product
         /// </summary>
@@ -384,7 +430,38 @@ namespace EvrythngAPI
         /// <returns>The property or properties created or updated.</returns>
         public List<Property> CreateUpdateProperties(string productId, List<Property> properties)
         {
-            throw new NotImplementedException();
+         
+            var returnedProperties = new List<Property>();
+            var propertiesArray = Utilities.ConvertPropertiesToJArray(properties);
+
+            // Set content of request
+            var content = new StringContent(propertiesArray.ToString());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            //  /products/{productId}/properties
+            var propertyUpdateUrl = string.Format(@"/products/{0}/properties", productId);
+            var task = _httpClient.PutAsync(propertyUpdateUrl, content)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    // Evrythng API returns the array of Properties
+                    dynamic jArray = JArray.Parse(jsonResult) as JArray;
+
+                    // Convert JArray to Properties
+                    returnedProperties = ConvertJArrayToProperties(jArray);
+                    
+                });
+            task.Wait();
+
+            return returnedProperties;
+
         }
 
         /// <summary>
@@ -395,7 +472,42 @@ namespace EvrythngAPI
         /// <returns>void - Property passed by reference will be updated</returns>
         public void UpdateProperty(string productId, Property property)
         {
-            throw new NotImplementedException();
+            dynamic propertyAsJObject = new JObject();
+            propertyAsJObject.value = property.value;
+            if (property.timestamp != null)
+            {
+                propertyAsJObject.timestamp = Utilities.MillisecondsSinceEpoch(property.timestamp);
+            }
+
+            dynamic propertiesJArray = new JArray();
+            propertiesJArray.Add(propertyAsJObject);
+
+            // Set content of request
+            var content = new StringContent(propertiesJArray.ToString());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            //  /products/{productId}/properties/{key}
+            var propertyUpdateUrl = string.Format(@"/products/{0}/properties/{1}", productId, property.key);
+            var task = _httpClient.PutAsync(propertyUpdateUrl, content)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic props = JArray.Parse(jsonResult) as JArray;
+                    var propertyHistory = (List<Property>)Utilities.ConvertJArrayToProperties(props, property.key);
+
+                    // Grab the updated timestamp
+                    var updatedProperty = propertyHistory.Find(p => p.value == property.value);
+                    property.timestamp = updatedProperty.timestamp;
+
+                });
+            task.Wait();
         }
 
         /// <summary>
@@ -406,7 +518,31 @@ namespace EvrythngAPI
         /// <returns>void - Properties passed by reference will be updated</returns>
         public void UpdateProperty(string productId, List<Property> properties)
         {
-            throw new NotImplementedException();
+            var propertyKey = properties[0].key;
+            dynamic propertiesJArray = Utilities.ConvertPropertiesToJArray(properties);
+
+            // Set content of request
+            var content = new StringContent(propertiesJArray.ToString());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            //  /products/{productId}/properties/{key}
+            var propertyUpdateUrl = string.Format(@"/products/{0}/properties/{1}", productId, propertyKey);
+            var task = _httpClient.PutAsync(propertyUpdateUrl, content)
+                .ContinueWith((taskwithmsg) =>
+                {
+                    var response = taskwithmsg.Result;
+                    // throws AggregateException if not a success code
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonTask = response.Content.ReadAsStringAsync();
+                    jsonTask.Wait();
+                    var jsonResult = jsonTask.Result;
+
+                    dynamic props = JArray.Parse(jsonResult) as JArray;
+                    properties = (List<Property>)Utilities.ConvertJArrayToProperties(props);
+
+                });
+            task.Wait();
         }
 
         /// <summary>
@@ -416,7 +552,19 @@ namespace EvrythngAPI
         /// <param name="propertyKey">The property key of the property to delete</param>
         public void DeleteProperty(string productId, string propertyKey)
         {
-            throw new NotImplementedException();
+            var propertyDeleteUrl = string.Format(@"/products/{0}/properties/{1}", productId, propertyKey);
+
+            var task = _httpClient.DeleteAsync(propertyDeleteUrl)
+                    .ContinueWith((taskwithmsg) =>
+                    {
+                        var response = taskwithmsg.Result;
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            throw new Exception(string.Format("Status Code: {0}, Reason: {1}", response.StatusCode, response.ReasonPhrase));
+                        }
+                    });
+            task.Wait(); 
         }
 
         /// <summary>
@@ -427,7 +575,20 @@ namespace EvrythngAPI
         /// <param name="endDateTime">Timestamp before which all property values will be removed</param>
         public void DeleteProperty(string productId, string propertyKey, DateTime? endDateTime)
         {
-            throw new NotImplementedException();
+            var endTimeMilliseconds = Utilities.MillisecondsSinceEpoch(endDateTime);
+            var propertyDeleteUrl = string.Format(@"/products/{0}/properties/{1}?to={2}", productId, propertyKey, endTimeMilliseconds);
+
+            var task = _httpClient.DeleteAsync(propertyDeleteUrl)
+                    .ContinueWith((taskwithmsg) =>
+                    {
+                        var response = taskwithmsg.Result;
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            throw new Exception(string.Format("Status Code: {0}, Reason: {1}", response.StatusCode, response.ReasonPhrase));
+                        }
+                    });
+            task.Wait();
         }
 
         #endregion Property Methods

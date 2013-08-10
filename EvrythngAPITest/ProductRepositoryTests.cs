@@ -537,6 +537,237 @@ namespace EvrythngAPITest
             _sut.DeleteProduct(getPropsProduct.Id);
         }
 
+        [TestMethod]
+        public void GetProperties_NoProperties_ReturnsEmptyList()
+        {            
+            // Arrange
+            var getPropsProduct = new Product { fn = "Get Product Properties Test" };
+            _sut.CreateProduct(getPropsProduct);
+            var originalUpdateDate = getPropsProduct.updatedAt;
+
+            // Act
+            Assert.IsFalse(string.IsNullOrEmpty(getPropsProduct.Id));
+            var myProperties = _sut.GetProperties(getPropsProduct.Id);
+
+            // Assert            
+            Assert.IsNotNull(myProperties);
+            Assert.IsTrue(myProperties.Count == 0);
+
+            _sut.DeleteProduct(getPropsProduct.Id);
+        }
+
+        [TestMethod]
+        public void CreateUpdateNewPropertiesSucceeds()
+        {
+            // Arrange
+            var createpropsProduct = new Product { fn = "Get Product Properties Test" };
+            createpropsProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            _sut.CreateProduct(createpropsProduct);
+            var originalUpdateDate = createpropsProduct.updatedAt;                        
+
+            var propsToCreate = new List<Property>();
+            propsToCreate.Add(new Property { key = "weight", value = "165", timestamp = DateTime.Now });
+            propsToCreate.Add(new Property { key = "height", value = "68", timestamp = DateTime.Now });
+            propsToCreate.Add(new Property { key = "length", value = "46", timestamp = DateTime.Now });
+
+            // Act
+            var result = _sut.CreateUpdateProperties(createpropsProduct.Id, propsToCreate);
+
+            // Assert
+            Assert.IsNotNull(result);
+            // The returned Properties are only those that were sent in the Create/Update request,
+            // not the total number.
+            Assert.IsTrue(result.Count == 3);
+
+            // Total Properties on the Product should now be 4
+            var productWithMoreProps = _sut.GetProduct(createpropsProduct.Id);
+            Assert.IsTrue(productWithMoreProps.properties.Count == 4);
+
+            // Also GetProperties should return 4
+            var propsAgain = _sut.GetProperties(createpropsProduct.Id);
+            Assert.IsTrue(propsAgain.Count == 4);
+
+            _sut.DeleteProduct(createpropsProduct.Id);
+        }
+
+        /// <summary>
+        /// This test proves that updating a property using the /properties endpoint 
+        /// does not add a new property - just updates it, nor does it add history to a property.
+        /// </summary>
+        [TestMethod]
+        public void UpdateExistingPropertyValueAtPropertiesEndpoint()
+        {
+            // Arrange
+            var updatePropsProduct = new Product { fn = "Get Product Properties Test" };
+            updatePropsProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            updatePropsProduct.properties.Add(new Property { key = "speed", value = "fast", timestamp = DateTime.Now });
+            _sut.CreateProduct(updatePropsProduct);
+            var originalUpdateDate = updatePropsProduct.updatedAt;                        
+
+            // Act
+            Assert.IsFalse(string.IsNullOrEmpty(updatePropsProduct.Id));
+            var myProperties = _sut.GetProperties(updatePropsProduct.Id);
+
+            // Assert            
+            Assert.IsTrue(myProperties.Count == 2);
+
+            var colorProperty = myProperties.Find(p => p.key == "color");
+            colorProperty.value = "blue";
+
+            // Update the "color" property and check
+            var result = _sut.CreateUpdateProperties(updatePropsProduct.Id, myProperties);
+            Assert.IsTrue(result.Count == 2);
+            var newColor = result.Find(p => p.key == "color");
+            Assert.AreEqual<string>("blue", newColor.value);
+
+            // Get all properties - what's there?
+            var propsAgain = _sut.GetProperties(updatePropsProduct.Id);
+            Assert.IsTrue(propsAgain.Count == 2);
+
+            // Get the PropertyHistory for 'color'
+            var colorPropertyHistory = _sut.GetPropertyHistory(updatePropsProduct.Id, "color");
+            Assert.IsTrue(colorPropertyHistory.Count == 1);
+
+            _sut.DeleteProduct(updatePropsProduct.Id);
+
+        }
+
+        [TestMethod]
+        public void GetPropertyHistorySucceeds()
+        {
+            // Arrange
+            var testProduct = new Product { fn = "Get Product Properties Test" };
+            testProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            _sut.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
+                        
+            // Act
+            Assert.IsFalse(string.IsNullOrEmpty(testProduct.Id));
+            var propertyHistory = _sut.GetPropertyHistory(testProduct.Id, "color");
+
+            // Assert
+            Assert.IsNotNull(propertyHistory);
+            Assert.IsTrue(propertyHistory.Count == 1);
+            Assert.AreEqual("white", propertyHistory[0].value);
+
+            _sut.DeleteProduct(testProduct.Id);
+
+        }
+
+        /// <summary>
+        /// Updating a single property adds history with new value and timestamp.
+        /// </summary>
+        [TestMethod]
+        public void UpdatePropertyAtPropertyEndpointAddsHistory()
+        {
+            // Arrange
+            var testProduct = new Product { fn = "Get Product Properties Test" };
+            testProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            _sut.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
+
+            Assert.IsFalse(string.IsNullOrEmpty(testProduct.Id));
+            var propertyHistory = _sut.GetPropertyHistory(testProduct.Id, "color");
+            Assert.IsNotNull(propertyHistory);
+            Assert.IsTrue(propertyHistory.Count == 1);
+            Assert.AreEqual("white", propertyHistory[0].value);
+
+            // Act
+            var propertyToUpdate = propertyHistory[0];
+            propertyToUpdate.value = "violet";
+            propertyToUpdate.timestamp = DateTime.Now.AddDays(-1);
+            _sut.UpdateProperty(testProduct.Id, propertyToUpdate);
+            // Get History a second time
+            propertyHistory = _sut.GetPropertyHistory(testProduct.Id, "color");
+
+            // Assert
+            Assert.IsTrue(propertyHistory.Count == 2);
+
+            _sut.DeleteProduct(testProduct.Id);
+
+        }
+
+        /// <summary>
+        /// Updating a single property with multiple values
+        /// </summary>
+        [TestMethod]
+        public void UpdatePropertyWithMultipleValuesAndTimestamps()
+        {
+            // Arrange
+            var testProduct = new Product { fn = "Update Product Properties Test" };
+            var whiteTime = DateTime.Now.AddMinutes(1);
+            testProduct.properties.Add(new Property { key = "color", value = "white", timestamp = whiteTime });
+            _sut.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
+
+            Assert.IsFalse(string.IsNullOrEmpty(testProduct.Id));
+            var propertyHistory = _sut.GetPropertyHistory(testProduct.Id, "color");
+            Assert.IsNotNull(propertyHistory);
+            Assert.IsTrue(propertyHistory.Count == 1);
+            Assert.AreEqual("white", propertyHistory[0].value);
+
+            // Act
+            // Add multiple property values
+            var blueTime = DateTime.Now;
+            var redTime = DateTime.Now.AddHours(1);
+            var greenTime = DateTime.Now.AddHours(2);
+
+            var blue = new Property { key = "color", value = "blue", timestamp = blueTime };
+            var red = new Property { key = "color", value = "red", timestamp = redTime };
+            var green = new Property { key = "color", value = "green", timestamp = greenTime };
+
+            propertyHistory.Add(blue);
+            propertyHistory.Add(red);
+            propertyHistory.Add(green);
+            _sut.UpdateProperty(testProduct.Id, propertyHistory);
+
+            Assert.IsTrue(propertyHistory.Count == 4);
+
+            // Get History a second time
+            var propertyHistory2 = _sut.GetPropertyHistory(testProduct.Id, "color");
+            var colorWhite = propertyHistory2.Find(p => p.value == "white");
+            var colorBlue = propertyHistory2.Find(p => p.value == "blue");
+            var colorRed = propertyHistory2.Find(p => p.value == "red");
+            var colorGreen = propertyHistory2.Find(p => p.value == "green");
+
+            // Assert
+            Assert.IsTrue(propertyHistory2.Count == 4);
+            Assert.IsNotNull(colorWhite);
+            Assert.IsNotNull(colorBlue);
+            Assert.IsNotNull(colorRed);
+            Assert.IsNotNull(colorGreen);
+
+            _sut.DeleteProduct(testProduct.Id);
+
+        }
+
+        //[TestMethod]
+        //public void DeleteSingleProperty()
+        //{
+        //    // Arrange
+        //    var testProduct = new Product { fn = "Update Product Properties Test" };
+        //    testThng.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+        //    testThng.properties.Add(new Property { key = "weight", value = "165", timestamp = DateTime.Now });
+        //    testThng.properties.Add(new Property { key = "height", value = "68", timestamp = DateTime.Now });
+        //    testThng.properties.Add(new Property { key = "length", value = "46", timestamp = DateTime.Now });
+
+        //    _sut.CreateThng(testThng);
+        //    var originalUpdateDate = testThng.updatedAt;
+        //    var originalProperties = _sut.GetProperties(testThng.Id);
+
+        //    // Act                        
+        //    _sut.DeleteProperty(testThng.Id, "color");
+        //    var propertiesAfterDelete = _sut.GetProperties(testThng.Id);
+
+        //    // Assert
+        //    Assert.AreEqual(4, originalProperties.Count);
+        //    Assert.AreEqual(3, propertiesAfterDelete.Count);
+
+        //    _sut.DeleteThng(testThng.Id);
+        //}
+
+
+
 
         #endregion Properties Tests
 

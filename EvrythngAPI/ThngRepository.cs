@@ -71,67 +71,7 @@ namespace EvrythngAPI
             }
 
             return locationsArray;
-        }
-
-        private List<Property> ConvertJArrayToProperties(JArray propertiesArray)
-        {
-            var properties = new List<Property>();
-
-            foreach (dynamic p in propertiesArray)
-            {
-                var myProperty = new Property();
-                myProperty.key = p.key;
-                myProperty.value = p.value;
-                myProperty.timestamp = Utilities.DateTimeSinceEpoch((long)p.timestamp);
-                properties.Add(myProperty);
-            }
-
-            return properties;
-        }
-
-        private List<Property> ConvertJArrayToProperties(JArray propertiesArray, string propertyKey)
-        {
-            var properties = new List<Property>();
-
-            foreach (dynamic p in propertiesArray)
-            {
-                var myProperty = new Property();
-                myProperty.key = propertyKey;
-                myProperty.value = p.value;
-                myProperty.timestamp = Utilities.DateTimeSinceEpoch((long)p.timestamp);
-                properties.Add(myProperty);
-            }
-
-            return properties;
-        }
-
-        private JArray ConvertPropertiesToJArray(List<Property> properties)
-        {
-            var propertiesArray = new JArray();
-
-            foreach (Property p in properties)
-            {
-                dynamic jObject = new JObject();
-                jObject.key = p.key;
-                jObject.value = p.value;
-                jObject.timestamp = Utilities.MillisecondsSinceEpoch(p.timestamp);
-                propertiesArray.Add(jObject);
-            }
-
-            return propertiesArray;
-        }
-
-        private JObject ConvertPropertyToJObject(Property property)
-        {
-            // Create a dynamic JObject for more controlled serialization
-            dynamic dynamicPropertyObject = new JObject();
-
-            dynamicPropertyObject.key = property.key;
-            dynamicPropertyObject.value = property.value;
-
-            return dynamicPropertyObject;
-
-        }
+        }                              
         
         private JObject ConvertThngToJObject(Thng thngToConvert)
         {
@@ -403,18 +343,9 @@ namespace EvrythngAPI
                     jsonTask.Wait();
                     var jsonResult = jsonTask.Result;
 
-                    dynamic props = JArray.Parse(jsonResult) as JArray;
-                    //thngProperties = new List<Property>();
-                    thngProperties = ConvertJArrayToProperties(props);
-
-                    //foreach (dynamic p in props)
-                    //{
-                    //    var myProperty = new Property();
-                    //    myProperty.key = p.key;
-                    //    myProperty.value = p.value;
-                    //    myProperty.timestamp = Utilities.DateTimeSinceEpoch((long)p.timestamp);                        
-                    //    thngProperties.Add(myProperty);
-                    //}                                        
+                    dynamic props = JArray.Parse(jsonResult) as JArray;                    
+                    thngProperties = Utilities.ConvertJArrayToProperties(props);
+                                                       
                 });
             task.Wait();
 
@@ -447,7 +378,7 @@ namespace EvrythngAPI
                     var jsonResult = jsonTask.Result;
 
                     dynamic props = JArray.Parse(jsonResult) as JArray;                    
-                    propertyHistory = ConvertJArrayToProperties(props, propertyKey);
+                    propertyHistory = Utilities.ConvertJArrayToProperties(props, propertyKey);
 
                                                        
                 });
@@ -484,7 +415,7 @@ namespace EvrythngAPI
                     var jsonResult = jsonTask.Result;
 
                     dynamic props = JArray.Parse(jsonResult) as JArray;
-                    propertyHistory = ConvertJArrayToProperties(props, propertyKey);
+                    propertyHistory = Utilities.ConvertJArrayToProperties(props, propertyKey);
 
 
                 });
@@ -496,7 +427,7 @@ namespace EvrythngAPI
         public List<Property> CreateUpdateProperties(string thngId, List<Property> properties)
         {
             var returnedProperties = new List<Property>();
-            var propertiesArray = ConvertPropertiesToJArray(properties);
+            var propertiesArray = Utilities.ConvertPropertiesToJArray(properties);
 
             // Set content of request
             var content = new StringContent(propertiesArray.ToString());
@@ -519,7 +450,7 @@ namespace EvrythngAPI
                     dynamic jArray = JArray.Parse(jsonResult) as JArray;
 
                     // Convert JArray to Properties
-                    returnedProperties = ConvertJArrayToProperties(jArray);
+                    returnedProperties = Utilities.ConvertJArrayToProperties(jArray);
                     
                 });
             task.Wait();
@@ -537,7 +468,7 @@ namespace EvrythngAPI
         public void UpdateProperty(string thngId, List<Property> properties)
         {
             var propertyKey = properties[0].key;
-            dynamic propertiesJArray = ConvertPropertiesToJArray(properties);                       
+            dynamic propertiesJArray = Utilities.ConvertPropertiesToJArray(properties);                       
 
             // Set content of request
             var content = new StringContent(propertiesJArray.ToString());
@@ -557,12 +488,11 @@ namespace EvrythngAPI
                     var jsonResult = jsonTask.Result;
 
                     dynamic props = JArray.Parse(jsonResult) as JArray;
-                    properties = (List<Property>)ConvertJArrayToProperties(props);                                       
+                    properties = (List<Property>)Utilities.ConvertJArrayToProperties(props);                                       
 
                 });
             task.Wait();
-
-            //throw new NotImplementedException();
+            
         }
 
         /// <summary>
@@ -601,7 +531,7 @@ namespace EvrythngAPI
                     var jsonResult = jsonTask.Result;
 
                     dynamic props = JArray.Parse(jsonResult) as JArray;
-                    var propertyHistory = (List<Property>)ConvertJArrayToProperties(props, property.key);
+                    var propertyHistory = (List<Property>)Utilities.ConvertJArrayToProperties(props, property.key);
 
                     // Grab the updated timestamp
                     var updatedProperty = propertyHistory.Find(p => p.value == property.value);
