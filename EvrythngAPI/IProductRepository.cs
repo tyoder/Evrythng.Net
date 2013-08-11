@@ -8,14 +8,35 @@ namespace EvrythngAPI
 {
     public interface IProductRepository
     {
+        /// <summary>
+        /// Creates a Product
+        /// </summary>
+        /// <param name="product">Product to Create</param>
         void CreateProduct(Product product);
 
+        /// <summary>
+        /// Gets a specific Product by Id
+        /// </summary>
+        /// <param name="productId">Id of the Product</param>
+        /// <returns>A Product object</returns>
         Product GetProduct(string productId);
 
+        /// <summary>
+        /// Gets all Products for API key
+        /// </summary>
+        /// <returns>Generic List of Product objects</returns>
         List<Product> GetProducts();
 
+        /// <summary>
+        /// Updates a Product
+        /// </summary>
+        /// <param name="product">Product object to update</param>
         void UpdateProduct(Product product);
 
+        /// <summary>
+        /// Deletes a Product
+        /// </summary>
+        /// <param name="productId">Id of Product to delete</param>
         void DeleteProduct(string productId);
 
         /// <summary>

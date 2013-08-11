@@ -213,8 +213,26 @@ namespace EvrythngAPITest
         // public static void MyClassInitialize(TestContext testContext) { }
         //
         // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
+        [ClassCleanup()]
+        public static void MyClassCleanup() 
+        {
+            var myThngs = _sut.GetThngs();
+
+            foreach (Thng t in myThngs)
+            {
+                if (string.Compare("51c6f3aee4b0f91b11226d0b", t.Id) != 0
+                    && string.Compare("51a393b5e4b0deb47550738d", t.Id) != 0
+                    && string.Compare("513b3fcce4b084a15da3265a", t.Id) != 0
+                    && string.Compare("513b3f51e4b084a15da32659", t.Id) != 0
+                    )
+                {
+                    _sut.DeleteThng(t.Id);
+                }
+            }
+
+            var cleanedThngs = _sut.GetThngs();
+            Assert.AreEqual(4, cleanedThngs.Count);
+        }
         //
         // Use TestInitialize to run code before running each test 
         [TestInitialize()]
@@ -248,6 +266,30 @@ namespace EvrythngAPITest
             Assert.IsNotNull(thngToCreate.updatedAt);
 
             _sut.DeleteThng(thngToCreate.Id);
+
+        }
+
+        [TestMethod]
+        public void CreateWithProductSucceeds()
+        {
+            // Arrange
+            IProductRepository prodRepo = new ProductRepository();            
+            var testProduct = new Product { fn = "Product for Thng" };
+            prodRepo.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
+            Assert.IsFalse(string.IsNullOrEmpty(testProduct.Id));
+            
+            // Act
+            var thngToCreate = new Thng { name = "Thng with ProductId", productId = testProduct.Id };
+            _sut.CreateThng(thngToCreate);
+            Assert.IsFalse(string.IsNullOrEmpty(thngToCreate.Id));
+
+            // Assert
+            var thngRetrieved = _sut.GetThng(thngToCreate.Id);
+            Assert.AreEqual<string>(thngRetrieved.productId.Trim(), testProduct.Id.Trim());
+
+            _sut.DeleteThng(thngToCreate.Id);
+            prodRepo.DeleteProduct(testProduct.Id);
 
         }
 
@@ -301,19 +343,19 @@ namespace EvrythngAPITest
             _sut.DeleteThng(thngToCreate.Id);
         }
 
-        [TestMethod]
-        public void CreateWithNullPropertiesSucceeds()
-        {
-            var thngToCreate = new Thng { name = "create thng", description = "create test" };
-            thngToCreate.properties = null;
+        //[TestMethod]
+        //public void CreateWithNullPropertiesSucceeds()
+        //{
+        //    var thngToCreate = new Thng { name = "create thng", description = "create test" };
+        //    thngToCreate.properties = null;
 
-            _sut.CreateThng(thngToCreate);
+        //    _sut.CreateThng(thngToCreate);
 
-            Assert.IsFalse(string.IsNullOrEmpty(thngToCreate.Id));
-            Assert.IsNull(thngToCreate.properties);
+        //    Assert.IsFalse(string.IsNullOrEmpty(thngToCreate.Id));
+        //    Assert.IsNull(thngToCreate.properties);
 
-            _sut.DeleteThng(thngToCreate.Id);
-        }
+        //    _sut.DeleteThng(thngToCreate.Id);
+        //}
 
         [TestMethod]
         public void CreateWithLocationSucceeds()
@@ -1203,6 +1245,6 @@ namespace EvrythngAPITest
 
 
         #endregion Location Tests
-
+        
     }
 }

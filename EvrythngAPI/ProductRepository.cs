@@ -87,32 +87,15 @@ namespace EvrythngAPI
                 propertiesObject.Add(jProp);
             }
             dynamicProduct.properties = propertiesObject;
-
-            //// Convert Properties
-            //if (productToConvert.properties != null && productToConvert.properties.Count > 0)
-            //{
-            //    // Create a new JObject for Thng.properties
-            //    dynamic propertiesObject = new JObject();
-            //    foreach (var p in productToConvert.properties)
-            //    {
-            //        var jProp = new JProperty(p.key, p.value);
-            //        propertiesObject.Add(jProp);
-            //    }
-            //    dynamicProduct.properties = propertiesObject;
-            //}
-
-            //// Convert Identifiers
-            //if (productToConvert.identifiers != null && productToConvert.identifiers.Count > 0)
-            //{
-                dynamic identitiesObject = new JObject();
-                foreach (var i in productToConvert.identifiers)
-                {
-                    var jProp = new JProperty(i.key, i.value);
-                    identitiesObject.Add(jProp);
-                }
-                dynamicProduct.identifiers = identitiesObject;
-            //}
-
+            
+            dynamic identitiesObject = new JObject();
+            foreach (var i in productToConvert.identifiers)
+            {
+                var jProp = new JProperty(i.key, i.value);
+                identitiesObject.Add(jProp);
+            }
+            dynamicProduct.identifiers = identitiesObject;
+            
             return dynamicProduct;
 
         }

@@ -741,53 +741,107 @@ namespace EvrythngAPITest
 
         }
 
-        //[TestMethod]
-        //public void DeleteSingleProperty()
-        //{
-        //    // Arrange
-        //    var testProduct = new Product { fn = "Update Product Properties Test" };
-        //    testThng.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
-        //    testThng.properties.Add(new Property { key = "weight", value = "165", timestamp = DateTime.Now });
-        //    testThng.properties.Add(new Property { key = "height", value = "68", timestamp = DateTime.Now });
-        //    testThng.properties.Add(new Property { key = "length", value = "46", timestamp = DateTime.Now });
+        /// <summary>
+        /// Get a single property and specify a time interval
+        /// </summary>
+        [TestMethod]
+        public void GetPropertyUsingTimeInterval()
+        {
+            // Arrange
+            var testProduct = new Product { fn = "Update Product Properties Test" };
+            var whiteTime = DateTime.Now;
+            testProduct.properties.Add(new Property { key = "color", value = "white", timestamp = whiteTime });
+            _sut.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
 
-        //    _sut.CreateThng(testThng);
-        //    var originalUpdateDate = testThng.updatedAt;
-        //    var originalProperties = _sut.GetProperties(testThng.Id);
+            Assert.IsFalse(string.IsNullOrEmpty(testProduct.Id));
+            var propertyHistory = _sut.GetPropertyHistory(testProduct.Id, "color");
+            Assert.IsNotNull(propertyHistory);
+            Assert.IsTrue(propertyHistory.Count == 1);
+            Assert.AreEqual("white", propertyHistory[0].value);
 
-        //    // Act                        
-        //    _sut.DeleteProperty(testThng.Id, "color");
-        //    var propertiesAfterDelete = _sut.GetProperties(testThng.Id);
+            // Act
+            // Add 3 more colors with specified timestamps
 
-        //    // Assert
-        //    Assert.AreEqual(4, originalProperties.Count);
-        //    Assert.AreEqual(3, propertiesAfterDelete.Count);
+            var blueTime = new DateTime(2008, 1, 1);
+            var redTime = blueTime.AddYears(3);
+            var greenTime = blueTime.AddYears(4);
 
-        //    _sut.DeleteThng(testThng.Id);
-        //}
+            var blue = new Property { key = "color", value = "blue", timestamp = (DateTime?)blueTime };
+            var red = new Property { key = "color", value = "red", timestamp = (DateTime?)redTime };
+            var green = new Property { key = "color", value = "green", timestamp = (DateTime?)greenTime };
+
+            propertyHistory.Add(blue);
+            propertyHistory.Add(red);
+            propertyHistory.Add(green);
+            _sut.UpdateProperty(testProduct.Id, propertyHistory);
+
+            Assert.IsTrue(propertyHistory.Count == 4);
+
+            // Get History in time - the request should only return 2 colors
+            var beginTime = new DateTime(2010, 1, 1);
+            var endTime = new DateTime(2013, 1, 1);
+            var propertyHistory2 = _sut.GetPropertyHistory(testProduct.Id, "color", (DateTime?)beginTime, (DateTime?)endTime);
+
+            var colorRed = propertyHistory2.Find(p => p.value == "red");
+            var colorGreen = propertyHistory2.Find(p => p.value == "green");
+
+            // Assert  - only Red and Green should be returned
+            Assert.IsTrue(propertyHistory2.Count == 2);
+            Assert.IsNotNull(colorRed);
+            Assert.IsNotNull(colorGreen);
+
+            _sut.DeleteProduct(testProduct.Id);
+
+        }
+
+        [TestMethod]
+        public void DeleteSingleProperty()
+        {
+            // Arrange
+            var testProduct = new Product { fn = "Update Product Properties Test" };
+            testProduct.properties.Add(new Property { key = "color", value = "white", timestamp = DateTime.Now });
+            testProduct.properties.Add(new Property { key = "weight", value = "165", timestamp = DateTime.Now });
+            testProduct.properties.Add(new Property { key = "height", value = "68", timestamp = DateTime.Now });
+            testProduct.properties.Add(new Property { key = "length", value = "46", timestamp = DateTime.Now });
+
+            _sut.CreateProduct(testProduct);
+            var originalUpdateDate = testProduct.updatedAt;
+            var originalProperties = _sut.GetProperties(testProduct.Id);
+
+            // Act                        
+            _sut.DeleteProperty(testProduct.Id, "color");
+            var propertiesAfterDelete = _sut.GetProperties(testProduct.Id);
+
+            // Assert
+            Assert.AreEqual(4, originalProperties.Count);
+            Assert.AreEqual(3, propertiesAfterDelete.Count);
+
+            _sut.DeleteProduct(testProduct.Id);
+        }
 
 
 
 
         #endregion Properties Tests
 
-        [TestMethod]
-        public void CleanUp()
-        {
+        //[TestMethod]
+        //public void CleanUp()
+        //{
 
-            var myProducts = _sut.GetProducts();
+        //    var myProducts = _sut.GetProducts();
 
-            foreach (Product p in myProducts)
-            {
-                if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
-                {
-                    _sut.DeleteProduct(p.Id);
-                }
-            }
+        //    foreach (Product p in myProducts)
+        //    {
+        //        if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
+        //        {
+        //            _sut.DeleteProduct(p.Id);
+        //        }
+        //    }
 
-            var cleanedProducts = _sut.GetProducts();
-            Assert.AreEqual(1, cleanedProducts.Count);
+        //    var cleanedProducts = _sut.GetProducts();
+        //    Assert.AreEqual(1, cleanedProducts.Count);
 
-        }
+        //}
     }
 }

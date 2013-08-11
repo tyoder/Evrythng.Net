@@ -80,32 +80,28 @@ namespace EvrythngAPI
 
             // Name should never be null - checked by service layer
             dynamicThng.name = thngToConvert.name;
-            
-            // Get Description
-            if (!string.IsNullOrEmpty(thngToConvert.description))
+
+            // Get ProductId
+            if (!string.IsNullOrEmpty(thngToConvert.productId))
             {
-                dynamicThng.description = thngToConvert.description;
+                dynamicThng.product = thngToConvert.productId ?? string.Empty;
             }
+                        
+            // Get Description
+            dynamicThng.description = thngToConvert.description ?? string.Empty;           
 
             // Convert tags
-            if (thngToConvert.tags != null && thngToConvert.tags.Count > 0)
+            var thngTags = new JProperty("tags", thngToConvert.tags);
+            dynamicThng.Add(thngTags);
+                        
+            // Create a new JObject for Thng.properties
+            dynamic propertiesObject = new JObject();
+            foreach (var p in thngToConvert.properties)
             {
-                var thngTags = new JProperty("tags", thngToConvert.tags);
-                dynamicThng.Add(thngTags);
+                var jProp = new JProperty(p.key, p.value);
+                propertiesObject.Add(jProp);
             }
-
-            // Convert Properties
-            if (thngToConvert.properties != null && thngToConvert.properties.Count > 0)
-            {
-                // Create a new JObject for Thng.properties
-                dynamic propertiesObject = new JObject();
-                foreach (var p in thngToConvert.properties)
-                {
-                    var jProp = new JProperty(p.key, p.value);
-                    propertiesObject.Add(jProp);
-                }
-                dynamicThng.properties = propertiesObject;
-            }
+            dynamicThng.properties = propertiesObject;
 
             // Convert Location
             if (thngToConvert.location != null)
@@ -114,7 +110,6 @@ namespace EvrythngAPI
                 locationObject.latitude = thngToConvert.location.latitude;
                 locationObject.longitude = thngToConvert.location.longitude;
                 dynamicThng.location = locationObject;
-
             }
 
             return dynamicThng;
@@ -127,6 +122,8 @@ namespace EvrythngAPI
             returnThng.name = jObjectToConvert.name;
 
             returnThng.description = jObjectToConvert.description;
+            returnThng.productId = jObjectToConvert.product;
+
             if (jObjectToConvert.tags != null)
             {
                 returnThng.tags = jObjectToConvert.tags.ToObject<List<string>>();
@@ -168,6 +165,10 @@ namespace EvrythngAPI
         {            
             // Convert Thng to JObject
             var thngAsJobject = ConvertThngToJObject(thng);
+            //if (string.IsNullOrEmpty(thngAsJobject.Property("product").Value.ToString()))
+            //{
+            //    thngAsJobject.Remove("product");
+            //}
             
             // Serialize JObject to Json
             string thngJson = JsonConvert.SerializeObject(thngAsJobject, Formatting.Indented);                        

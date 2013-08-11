@@ -21,6 +21,7 @@ namespace EvrythngAPI
         #region Public Properties
 
         public string Id { get; set; }
+        public string productId { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public List<string> tags { get; set; }
