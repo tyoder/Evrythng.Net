@@ -51,10 +51,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IProductRepository.cs" />
+    <Compile Include="IProductService.cs" />
     <Compile Include="IThngRepository.cs" />
     <Compile Include="IThngService.cs" />
     <Compile Include="Objects.cs" />
     <Compile Include="ProductRepository.cs" />
+    <Compile Include="ProductService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThngRepository.cs" />
     <Compile Include="ThngService.cs" />

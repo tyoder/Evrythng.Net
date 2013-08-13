@@ -17,19 +17,38 @@ namespace EvrythngConsole
    /// </summary> 
    class Program
    {       
-      private static IThngService _thngService;       
+      private static IThngService _thngService;
+      private static IProductService _productService;
 
       static void Main(string[] args)
       {
+          //TestThngs();
+
+          //string productId;
+          //_productService = new ProductService();
+
+          //// Create a Product
+          //var prod1 = new Product { fn = "first prod" };
+          //_productService.CreateProduct(prod1);
+
+          //// Grab its Id after it is created
+          //productId = prod1.Id;
+
+
+
+      }
+
+      private static void TestThngs()
+      {
           string thngId;
-          
+
           // Instantiate the ThngService
-          _thngService = new ThngService();          
+          _thngService = new ThngService();
 
           // Create a Thng
           var thng1 = new Thng { name = "Hello" };
           _thngService.CreateThng(thng1);
-          
+
           // Grab its Id after it is created
           thngId = thng1.Id;
           PrintThng(thng1);
@@ -37,7 +56,7 @@ namespace EvrythngConsole
 
           // Get the Thng we just created
           var thng2 = _thngService.GetThng(thngId);
-          
+
           // Add a description and tags, then update thng
           thng2.description = "Console Thng";
           thng2.tags.Add("test");
@@ -79,14 +98,14 @@ namespace EvrythngConsole
           // Same result if you just get all properties
           var thng4Properties = _thngService.GetProperties(thngId);
           PrintProperties(thng4Properties);
-          
+
           // But, if you retrieve the 'speed' property, you get a history of the values
           var speedPropertyUpdatedList = _thngService.GetPropertyHistory(thngId, "speed");
           PrintProperties(speedPropertyUpdatedList);
 
           // Add a Location to a Thng
           // To add a Location to an existing Thng, use CreateUpdateLocations
-          var locationCollection = new List<Location>();          
+          var locationCollection = new List<Location>();
           locationCollection.Add(new Location { latitude = 30, longitude = 40, timestamp = new DateTime(2012, 4, 15) });
           _thngService.CreateUpdateLocations(thngId, locationCollection);
 
@@ -100,7 +119,7 @@ namespace EvrythngConsole
           var updatedLocations = _thngService.GetLocations(thngId);
           // now there should be two locations at different times
           PrintLocations(updatedLocations);
-                                        
+
           // Delete the Thng
           Console.WriteLine("Deleting Thng...");
           _thngService.DeleteThng(thngId);
@@ -153,6 +172,33 @@ namespace EvrythngConsole
                Console.WriteLine(" - " + p.key + ": " + p.value + " timestamp: " + p.timestamp);
            }
 
+       }
+
+       private static void PrintProduct(Product productToPrint)
+       {
+           //Console.WriteLine();
+           //Console.WriteLine("Printing Thng with Id: " + thngToPrint.Id);
+           //Console.WriteLine("name: " + thngToPrint.name);
+           //Console.WriteLine("description: " + thngToPrint.description);
+           //Console.WriteLine("createdAt: " + thngToPrint.createdAt);
+           //Console.WriteLine("updatedAt: " + thngToPrint.updatedAt);
+           //Console.WriteLine("tags: ");
+           //foreach (var t in thngToPrint.tags)
+           //{
+           //    Console.WriteLine(" - " + t);
+           //}
+           //Console.WriteLine("properties: ");
+           //foreach (var p in thngToPrint.properties)
+           //{
+           //    Console.WriteLine(" - " + p.key + " : " + p.value);
+           //}
+           //Console.WriteLine("location: ");
+           //if (thngToPrint.location != null)
+           //{
+           //    Console.WriteLine(" - latitude: " + thngToPrint.location.latitude);
+           //    Console.WriteLine(" - longitude: " + thngToPrint.location.latitude);
+           //    Console.WriteLine(" - timestamp: " + thngToPrint.location.timestamp.ToString());
+           //}
        }
       
    }
