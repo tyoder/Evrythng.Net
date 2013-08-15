@@ -73,7 +73,12 @@ namespace EvrythngAPI
         /// <returns>A Product object</returns>
         public Product GetProduct(string productId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentNullException("productId", "productId must have a value");
+            }
+
+            return _productRepository.GetProduct(productId);
         }
 
         /// <summary>
@@ -82,7 +87,7 @@ namespace EvrythngAPI
         /// <returns>Generic List of Product objects</returns>
         public List<Product> GetProducts()
         {
-            throw new NotImplementedException();
+            return _productRepository.GetProducts();
         }
 
         /// <summary>
@@ -91,7 +96,39 @@ namespace EvrythngAPI
         /// <param name="product">Product object to update</param>
         public void UpdateProduct(Product product)
         {
-            throw new NotImplementedException();
+            if (product == null)
+            {
+                throw new ArgumentNullException("product", "Product cannot be null.");
+            }
+
+            if (string.IsNullOrEmpty(product.fn))
+            {
+                throw new ArgumentException("Product.fn", "Product must have a fn attribute to be created.");
+            }
+
+            // Do not allow Generic List attributes to be null when calling the Repository
+            if (product.categories == null)
+            {
+                throw new ArgumentException("Product.categories", "Product.categories must not be null - may be an empty List.");
+            }
+            if (product.photos == null)
+            {
+                throw new ArgumentException("Product.photos", "Product.photos must not be null - may be an empty List.");
+            }
+            if (product.identifiers == null)
+            {
+                throw new ArgumentException("Product.identifiers", "Product.identifiers must not be null - may be an empty List.");
+            }
+            if (product.tags == null)
+            {
+                throw new ArgumentException("Product.tags", "Product.tags must not be null - may be an empty List.");
+            }
+            if (product.properties == null)
+            {
+                throw new ArgumentException("Product.properties", "Product.properties must not be null - may be an empty List.");
+            }
+
+            _productRepository.UpdateProduct(product);
         }
 
         /// <summary>
@@ -100,7 +137,12 @@ namespace EvrythngAPI
         /// <param name="productId">Id of Product to delete</param>
         public void DeleteProduct(string productId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentNullException("productId", "productId must have a value");
+            }
+
+            _productRepository.DeleteProduct(productId);
         }
 
         /// <summary>
@@ -110,7 +152,12 @@ namespace EvrythngAPI
         /// <returns>Collection of Properties of a Product</returns>
         public List<Property> GetProperties(string productId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentNullException("productId", "productId must have a value");
+            }
+
+            return _productRepository.GetProperties(productId);
         }
 
         /// <summary>
@@ -121,7 +168,16 @@ namespace EvrythngAPI
         /// <returns>A specific Product Property</returns>
         public List<Property> GetPropertyHistory(string productId, string propertyKey)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentException("productId", "Product Id must have a value.");
+            }
+            if (string.IsNullOrEmpty(propertyKey))
+            {
+                throw new ArgumentException("propertyKey", "The Property key must have a value.");
+            }
+
+            return _productRepository.GetPropertyHistory(productId, propertyKey);
         }
 
         /// <summary>
@@ -134,7 +190,28 @@ namespace EvrythngAPI
         /// <returns></returns>
         public List<Property> GetPropertyHistory(string productId, string propertyKey, DateTime? beginDateTime, DateTime? endDateTime)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentException("productId", "Product Id must have a value.");
+            }
+            if (string.IsNullOrEmpty(propertyKey))
+            {
+                throw new ArgumentException("propertyKey", "The Property key must have a value.");
+            }
+            if (beginDateTime == null || beginDateTime.HasValue == false)
+            {
+                throw new ArgumentException("beginDateTime", "The begin time must have a value.");
+            }
+            if (endDateTime == null || endDateTime.HasValue == false)
+            {
+                throw new ArgumentException("endDateTime", "The end time must have a value.");
+            }
+            if (endDateTime < beginDateTime)
+            {
+                throw new ArgumentException("time interval", "The end time must be greater than the begin time.");
+            }
+
+            return _productRepository.GetPropertyHistory(productId, propertyKey, beginDateTime, endDateTime);
         }
 
         /// <summary>
@@ -145,7 +222,17 @@ namespace EvrythngAPI
         /// <returns>The property or properties created or updated.</returns>
         public List<Property> CreateUpdateProperties(string productId, List<Property> properties)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentNullException("productId", "productId must have a value");
+            }
+
+            if (properties == null)
+            {
+                throw new ArgumentException("Product.properties", "Product.properties must not be null - may be an empty List.");
+            }
+
+            return _productRepository.CreateUpdateProperties(productId, properties);
         }
 
         /// <summary>
@@ -156,7 +243,16 @@ namespace EvrythngAPI
         /// <returns>void - Property passed by reference will be updated</returns>
         public void UpdateProperty(string productId, Property property)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(productId))
+            {
+                throw new ArgumentException("productId", "Product Id must have a value.");
+            }
+            if (property == null)
+            {
+                throw new ArgumentNullException("property", "The property must have a value.");
+            }
+
+            _productRepository.UpdateProperty(productId, property);
         }
 
         /// <summary>

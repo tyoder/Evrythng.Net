@@ -825,23 +825,23 @@ namespace EvrythngAPITest
 
         #endregion Properties Tests
 
-        //[TestMethod]
-        //public void CleanUp()
-        //{
+        [TestMethod]
+        public void CleanUp()
+        {
 
-        //    var myProducts = _sut.GetProducts();
+            var myProducts = _sut.GetProducts();
 
-        //    foreach (Product p in myProducts)
-        //    {
-        //        if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
-        //        {
-        //            _sut.DeleteProduct(p.Id);
-        //        }
-        //    }
+            foreach (Product p in myProducts)
+            {
+                if (string.Compare("51d80ea0e4b0f5b53dd932b5", p.Id) != 0)
+                {
+                    _sut.DeleteProduct(p.Id);
+                }
+            }
 
-        //    var cleanedProducts = _sut.GetProducts();
-        //    Assert.AreEqual(1, cleanedProducts.Count);
+            var cleanedProducts = _sut.GetProducts();
+            Assert.AreEqual(1, cleanedProducts.Count);
 
-        //}
+        }
     }
 }
