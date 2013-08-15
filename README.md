@@ -11,7 +11,9 @@ Evrythng website: http://www.evrythng.com/
 
 How to get started with an API key, etc:  https://dev.evrythng.com/documentation/start
 
-The console application and the test project both contain app.config files.  When you have your own API key, place it in the appropriate node of the config files.  I would suggest running the console application first and then looking at the unit tests to get an understanding for how the Evrythng API works.  I am using a Service-Repository pattern in which the Repository classes are responsible for interacting with the API and the Service classes are responsible for checking nulls, empty strings, etc and enforcing any other rules which become necessary.  Essentially, the Repository layer relies on the Service layer to keep out bad requests.  Also, Service methods may combine Repository methods, if necessary, to return custom entities or collections.
+The console application and the test project both contain app.config files.  When you have your own API key, place it in the appropriate node of the config files.  I would suggest running the console application first and then looking at the unit tests to get an understanding for how the Evrythng API works.  Make sure to Build/Compile the entire solution or just the EvrythngAPI project, before running the console application.  The console app references the EvrythngAPI.dll which will be available in the bin directory of the EvrythngAPI project after it is built.
+
+I am using a Service-Repository pattern in which the Repository classes are responsible for interacting with the API and the Service classes are responsible for checking nulls, empty strings, etc and enforcing any other rules which become necessary.  Essentially, the Repository layer relies on the Service layer to keep out bad requests.  Also, Service methods may combine Repository methods, if necessary, to return custom entities or collections.
 
 This project currently includes the ability to operate on Thngs and Products.  Not yet included are Search and Collections, which I will work on next.
 
